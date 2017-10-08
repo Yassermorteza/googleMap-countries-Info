@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    
+   <title>Google Map</title>
+   <style type="text/css">
+    	
+    	#map,
+    	html,body{
+    		height: 100%;
+    		margin: 0;
+    		padding: 0;
+    	}
+    </style>
+  </head>
+  <body>
+    <input id="pac-input" class="controls" type="text" placeholder="Search Box">
+    <div id="map"></div>
+    <script>
+        var divContainer = document.getElementById('map');
+        var input = document.getElementById('pac-input');
+		var map;
+		var currentMark = null;
+		
+		function initMap() {
+
+			  map = new google.maps.Map(divContainer, {
+			    zoom: 2,
+			    center: new google.maps.LatLng(2.8,-187.3),
+			  });
+
+			  var script = document.createElement('script');
+			  script.src = 'countries.js';
+			  document.getElementsByTagName('head')[0].appendChild(script);
+
+		      map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+	    }
+      
+		window.countries = function(data) {
+
+				   loadCountries(data); 
+
+				   input.addEventListener('keyup', ()=>{
+					   	 loadCountries(data);
+			             google.maps.event.trigger(map, 'resize');
+				   })
+	    }
+   
+		function loadCountries(data){
+
+			data.features.forEach((el) => {
+
+			  	var coords = el.latlng;
+			    var name = el.name;
+			    var population = el.population;
+			    var currency = el.currencies[0].name;
+			    var language = el.languages[0].name;
+			    var languageNative = el.languages[0].nativeName;
+			    var flags = {
+					    	url : el.flag,
+					        size: new google.maps.Size(30, 20),
+							scaledSize: new google.maps.Size(25, 25)
+			               };
+
+			    var latLng = new google.maps.LatLng(coords[0],coords[1]);
+
+	            var marker = new google.maps.Marker({
+					      position: latLng,
+					      icon: flags,
+					      map: map 
+				});  
+	           
+				var infoWindow = new google.maps.InfoWindow({
+				            content: `<div width="800px" height="600px"><b>${name}</b>
+			            	          <img src="${el.flag}"style="width:50px; height:30px; float:rigth; display=inline-block"><br>
+			            	          <b><i>Population:</i></b><p>${population}</p>
+			            	          <b><i>currency:</i></b><p>${currency}</p>
+			            	          <b><i>language:</i></b><p>${language}, </p><p>${languageNative}</p></div>`
+				});
+
+				google.maps.event.addListener(marker, 'click', function () {
+
+					 if (currentMark !== null) {
+						    currentMark.setMap(null); 
+						}
+						    infoWindow.open(map, marker); 
+						    currentMark = infoWindow;
+				});
+		    });
+		};
+         
+    </script>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAk037wK2vDXh9HtRo_8b640k-UjA0kGIM
+     &callback=initMap&libraries=places"
+    async defer></script>
+  </body>
+</html>
+
